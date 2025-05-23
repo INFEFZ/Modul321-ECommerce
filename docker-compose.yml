@@ -1,0 +1,43 @@
+networks:
+  backend:
+
+services:
+  customer-api:
+    container_name: customer-api
+    image: ${DOCKER_REGISTRY-}customerservice
+    build:
+      context: .
+      dockerfile: CustomerService/Dockerfile
+    ports:
+      - 5010:5010
+      - 5011:5011
+    networks:
+      - backend
+
+  product-api:
+    container_name: product-api
+    image: ${DOCKER_REGISTRY-}productservice
+    build:
+      context: .
+      dockerfile: ProductService/Dockerfile
+    ports:
+      - 5020:5020
+      - 5021:5021
+    networks:
+      - backend
+    depends_on:
+      - mssql-database
+
+  mssql-database:
+    container_name: mssql-database
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=password@12345#
+      - MSSQL_DATA_DIR=/var/opt/mssql/data
+      - MSSQL_PID="Developer"
+      - MSSQL_TCP_PORT=1433
+    networks:
+      - backend
+    ports:
+      - 18001:1433
